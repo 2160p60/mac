@@ -1,38 +1,37 @@
-name: Build OBS Plugin
+name: Build mac-ui-plug-plug for Windows
 
 on:
   push:
     branches:
       - main
   pull_request:
+    branches:
+      - main
 
 jobs:
   build-windows:
     runs-on: windows-latest
 
     steps:
-    - name: Checkout repository with submodules
+    - name: Checkout repository
       uses: actions/checkout@v3
-      with:
-        submodules: recursive
 
-    - name: Setup Visual Studio environment
-      uses: microsoft/setup-msbuild@v1.1
+    - name: Setup CMake
+      uses: jwlawson/actions-setup-cmake@v1
 
     - name: Download OBS SDK
       run: |
-        if not exist obs-sdk (
-          git clone --depth 1 https://github.com/obsproject/obs-studio.git obs-sdk
-        )
+        curl -L -o obs-sdk.zip https://github.com/obsproject/obs-studio/releases/latest/download/OBS-SDK-Windows.zip
+        powershell -Command "Expand-Archive -Path obs-sdk.zip -DestinationPath obs-sdk"
 
     - name: Configure CMake
-      run: cmake -B build -S . -G "Visual Studio 17 2022" -A x64 -Dobs_DIR=obs-sdk/build
+      run: cmake -B build -S . -G "Visual Studio 17 2022" -A x64 -DOBS_SDK_DIR=${{ github.workspace }}\obs-sdk
 
-    - name: Build Release
+    - name: Build
       run: cmake --build build --config Release
 
-    - name: Upload built DLL
+    - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
-        name: obs-plugin-dll
-        path: build/Release/*.dll
+        name: mac-ui-plug-plug-dll
+        path: build\Release\mac-ui-plug-plug.dll
