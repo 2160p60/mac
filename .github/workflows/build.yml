@@ -17,7 +17,7 @@ jobs:
 
     - name: Download OBS SDK
       run: |
-        curl -L -o obs-sdk.zip https://github.com/obsproject/obs-studio/releases/download/29.1.3/obs-sdk.zip
+        curl -L -o obs-sdk.zip https://cdn-fastly.obsproject.com/downloads/obs-sdk-29.1.3.zip
         7z x obs-sdk.zip -obs-sdk
         dir obs-sdk
 
