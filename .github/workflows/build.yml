@@ -1,40 +1,38 @@
-name: Build OBS Plugin on Windows
+name: Build OBS Plugin
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
-    branches: [main]
 
 jobs:
   build-windows:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout repo with submodules
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
+    - name: Checkout repository with submodules
+      uses: actions/checkout@v3
+      with:
+        submodules: recursive
 
-      - name: Setup Visual Studio 2022 environment
-        uses: microsoft/setup-msbuild@v1.1
-        with:
-          vs-version: '17.0'
+    - name: Setup Visual Studio environment
+      uses: microsoft/setup-msbuild@v1.1
 
-      - name: Configure obs-studio
-        run: cmake -B obs-studio/build -S obs-studio -G "Visual Studio 17 2022" -A x64
+    - name: Download OBS SDK
+      run: |
+        if not exist obs-sdk (
+          git clone --depth 1 https://github.com/obsproject/obs-studio.git obs-sdk
+        )
 
-      - name: Build obs-studio
-        run: cmake --build obs-studio/build --config Release
+    - name: Configure CMake
+      run: cmake -B build -S . -G "Visual Studio 17 2022" -A x64 -Dobs_DIR=obs-sdk/build
 
-      - name: Configure plugin
-        run: cmake -B build -S . -G "Visual Studio 17 2022" -A x64 -DCMAKE_PREFIX_PATH=obs-studio/build
+    - name: Build Release
+      run: cmake --build build --config Release
 
-      - name: Build plugin
-        run: cmake --build build --config Release
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: obs-plugin-dll
-          path: build/Release/*.dll
+    - name: Upload built DLL
+      uses: actions/upload-artifact@v3
+      with:
+        name: obs-plugin-dll
+        path: build/Release/*.dll
