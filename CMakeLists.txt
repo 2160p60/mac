@@ -1,19 +1,22 @@
 cmake_minimum_required(VERSION 3.15)
-project(macos_ui_plugin)
 
+project(macos_ui_plugin LANGUAGES CXX)
+
+# Стандарт C++
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(obs REQUIRED)
+# Добавляем исходник
+add_library(macos_ui_plugin SHARED macos_ui_plugin.cpp)
 
-include_directories(
-    ${OBS_INCLUDE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
+# На windows назовём библиотеку .dll, на macOS .dylib, на Linux .so — CMake сделает сам
 
-add_library(macos_ui_plugin MODULE
-    macos_ui_plugin.cpp
-)
+# Опционально: если нужны какие-то include пути, добавь сюда
+# target_include_directories(macos_ui_plugin PRIVATE include)
 
-target_link_libraries(macos_ui_plugin
-    ${OBS_LIBRARIES}
-)
+# Опционально: добавь определения, зависящие от платформы
+if(WIN32)
+    target_compile_definitions(macos_ui_plugin PRIVATE PLATFORM_WINDOWS)
+elseif(APPLE)
+    target_compile_definitions(macos_ui_plugin PRIVATE PLATFORM_MACOS)
+endif()
