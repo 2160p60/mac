@@ -1,4 +1,4 @@
-name: Build OBS Plugin
+name: Build Windows
 
 on:
   push:
@@ -11,35 +11,26 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Set up MSVC
-        uses: ilammy/msvc-dev-cmd@v1
-
-      - name: Install CMake
-        uses: jwlawson/actions-setup-cmake@v1
+      - name: Setup CMake
+        uses: jwlawson/actions-setup-cmake@v1.9.1
         with:
-          cmake-version: '3.27.0'
+          cmake-version: '3.25.0'
 
-      - name: Install Ninja (faster build system)
-        uses: ashutoshvarma/setup-ninja@v1
-
-      - name: Install Qt
-        uses: jurplel/install-qt-action@v3
-        with:
-          version: '6.5.0'
-          arch: win64_msvc2019_64
+      - name: Clone OBS Studio (SDK)
+        run: |
+          git clone --depth=1 https://github.com/obsproject/obs-studio.git obs-sdk
 
       - name: Configure CMake
-        run: cmake -B build -S . -G "Ninja" -DCMAKE_BUILD_TYPE=Release
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -Dobs_DIR=$(pwd)/obs-sdk/build
 
-      - name: Build plugin
+      - name: Build with CMake
         run: cmake --build build --config Release
 
-      - name: Upload built DLL
-        uses: actions/upload-artifact@v4
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
         with:
-          name: obs-plugin-dll
-          path: |
-            build/*.dll
+          name: macos_ui_plugin
+          path: build/Release/macos_ui_plugin.dll
