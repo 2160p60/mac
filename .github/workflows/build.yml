@@ -1,4 +1,4 @@
-name: Build Windows
+name: Build Windows DLL
 
 on:
   push:
@@ -14,11 +14,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Clone OBS SDK
-        run: git clone --depth=1 https://github.com/obsproject/obs-studio.git obs-sdk
-
-      - name: Build OBS SDK
+      - name: Clone OBS Studio SDK
         run: |
+          git clone --depth=1 https://github.com/obsproject/obs-studio.git obs-sdk
           mkdir obs-sdk/build
           cd obs-sdk/build
           cmake .. -DCMAKE_INSTALL_PREFIX=%cd%\install -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release
@@ -28,7 +26,7 @@ jobs:
       - name: Configure plugin build
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -Dobs_DIR=%cd%\obs-sdk\build\install\lib\cmake\obs
 
-      - name: Build plugin
+      - name: Build plugin DLL
         run: cmake --build build --config Release
 
       - name: Upload DLL artifact
