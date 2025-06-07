@@ -11,7 +11,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v3
 
       - name: Setup CMake
@@ -19,7 +19,7 @@ jobs:
         with:
           cmake-version: '3.25.0'
 
-      - name: Clone OBS Studio repo (SDK)
+      - name: Clone OBS SDK
         run: |
           git clone --depth=1 https://github.com/obsproject/obs-studio.git obs-sdk
 
@@ -37,7 +37,7 @@ jobs:
       - name: Build plugin
         run: cmake --build build --config Release
 
-      - name: Upload plugin artifact
+      - name: Upload DLL artifact
         uses: actions/upload-artifact@v4
         with:
           name: macos_ui_plugin.dll
