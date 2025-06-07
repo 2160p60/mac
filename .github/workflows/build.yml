@@ -11,26 +11,34 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Setup CMake
-        uses: jwlawson/actions-setup-cmake@v1.9.1
+        uses: chrisjshull/setup-cmake@v2
         with:
           cmake-version: '3.25.0'
 
-      - name: Clone OBS Studio (SDK)
+      - name: Clone OBS Studio repo (SDK)
         run: |
           git clone --depth=1 https://github.com/obsproject/obs-studio.git obs-sdk
 
-      - name: Configure CMake
-        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -Dobs_DIR=$(pwd)/obs-sdk/build
+      - name: Build OBS SDK
+        run: |
+          mkdir obs-sdk/build
+          cd obs-sdk/build
+          cmake .. -DCMAKE_INSTALL_PREFIX=$(pwd)/install -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=Release
+          cmake --build . --config Release
+          cmake --install . --config Release
 
-      - name: Build with CMake
+      - name: Configure plugin build
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -Dobs_DIR=$(pwd)/obs-sdk/build/install/lib/cmake/obs
+
+      - name: Build plugin
         run: cmake --build build --config Release
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
+      - name: Upload plugin artifact
+        uses: actions/upload-artifact@v4
         with:
-          name: macos_ui_plugin
+          name: macos_ui_plugin.dll
           path: build/Release/macos_ui_plugin.dll
